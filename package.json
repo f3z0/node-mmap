@@ -1,17 +1,28 @@
 {
     "name":         "mmap",
-    "version":      "0.0.4",
-    "author":       "Ben Noordhuis",
+    "version":      "0.0.5",
+    "contributors": [{
+        "name" : "Ben Noordhuis",
+        "email" : "info@bnoordhuis.nl",
+        "url" : "https://github.com/bnoordhuis"
+    },{
+        "name" : "Gregory Ray (f3z0)",
+        "email" : "gregory.james.ray@gmail.com",
+        "url" : "https://github.com/f3z0"
+    }],
+    "dependencies": {
+        "bindings": "^1.2.1",
+         "nan": "~2.5.1"
+      },
     "description":  "mmap(2) bindings for node.js",
-    "homepage":     "https://github.com/bnoordhuis/node-mmap",
-    "engines":      { "node": ">=0.4.0" },
+    "homepage":     "https://github.com/f3z0/node-mmap",
+    "engines":      { "node": ">=0.12.0" },
     "main":         "./build/Release/mmap",
     "scripts": {
-        "preinstall":   "node-waf configure build",
-        "preuninstall": "node-waf clean"
+        "install": "node-gyp rebuild"
     },
     "repository": {
         "type":         "git",
-        "url":          "https://github.com/bnoordhuis/node-mmap.git"
+        "url":          "https://github.com/f3z0/node-mmap.git"
     }
 }

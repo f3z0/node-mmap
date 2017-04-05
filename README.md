@@ -2,17 +2,27 @@
 
 mmap(2) bindings for node.js - stop slurping, start mapping.
 
-** This module is no longer maintained. **
+*This project is forked from the original project at*
+*https://github.com/bnoordhuis/node-mmap and has been updated*
+*to work with node v6.9.2.*
+
+##### What's changed?
+
+* Migrated to node-gyp
+* Introduced nan.h for future backwards compatibility (maybe?)
+* Tested with electron, bridging the main/renderer divide.
+* Only tested on Mac OS/x so far, please report any platform
+  related issues 
 
 ## Installing
 
 Through [npm](http://npmjs.org/):
 
-	npm install mmap
+	npm install https://github.com/f3z0/node-mmap.git
 
 Or compile it from source with this one-liner:
 
-	node-waf configure build install
+	node-gyp configure build install
 
 ## Usage
 
@@ -43,19 +53,26 @@ Or compile it from source with this one-liner:
 
 See [the man page](http://www.opengroup.org/onlinepubs/000095399/functions/mmap.html) for more details.
 
-## Examples
+## Example - Shared memory across two processes
 
-Map a file into memory:
+##### First Process:
+    const fs = require('fs');
+    const mmap = require('node-mmap');
+    
+    var n_bytes = 1024;
+    var fd = fs.openSync('/tmp/temp_file', 'w+');
+    fs.writeSync(fd, '\0', n_bytes); // resize
+    var buffer = mmap.map(n_bytes, mmap.PROT_READ | mmap.PROT_WRITE , mmap.MAP_SHARED, fd, 0);
+    buffer.writeUInt32BE(0xDEADBEEF, 0);
 
-    fs = require('fs'), mmap = require('mmap');
-    fd = fs.openSync('/path/to/file', 'r');
-    size = fs.fstatSync(fd).size;
-    buffer = mmap.map(size, mmap.PROT_READ, mmap.MAP_SHARED, fd, 0);
-    // calculate faux checksum
-    var checksum = 0;
-    for (var i = 0; i < buffer.length; i++) {
-      checksum ^= buffer[i];
-    }
+##### Second Process:
+    const fs = require('fs');
+    const mmap = require('node-mmap');
+
+    var fd = fs.openSync('/tmp/temp_file', 'r');
+    var size = fs.fstatSync(fd).size;
+    var buffer = mmap.map(size, mmap.PROT_READ, mmap.MAP_SHARED, fd, 0);
+    console.log("I'll take dead beef? Answer: 0x" + buffer.readUInt32BE(0).toString(16));
 
 The file is automatically unmapped when the buffer object is garbage collected.
 
@@ -65,5 +82,13 @@ The file is automatically unmapped when the buffer object is garbage collected.
   why you would want to do that from JavaScript. Convince me otherwise. :-)
 
 * Reading from and writing to memory-mapped files is a potentially blocking
-  operation. *Do not* use this module in performance critical code. Better yet,
-  don't use this module at all.
+  operation. ~~*Do not* use this module in performance critical code. Better yet,
+  don't use this module at all.~~ Be smart how you use this module, a single
+  producer should write to memory and one or more consumers should read and
+  these roles are not interchangeable. This is because we don't have semaphores
+  nor mutexes in place to handle atomic memory writes (keep in mind memory writes
+  pages at a time even if a single byte is changed). Why would you want to use
+  mmap in production environment? Because shared memory is **the fastest type of
+  inter-process communication possible**, but only if used correctly and with
+  caution.
+
