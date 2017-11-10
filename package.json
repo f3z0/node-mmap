@@ -11,16 +11,12 @@
         "url" : "https://github.com/f3z0"
     }],
     "dependencies": {
-        "bindings": "^1.2.1",
-         "nan": "~2.5.1"
-      },
+         "nan": "^2.7.0"
+    },
     "description":  "mmap(2) bindings for node.js",
     "homepage":     "https://github.com/f3z0/node-mmap",
     "engines":      { "node": ">=0.12.0" },
     "main":         "./build/Release/mmap",
-    "scripts": {
-        "install": "node-gyp rebuild"
-    },
     "repository": {
         "type":         "git",
         "url":          "https://github.com/f3z0/node-mmap.git"
