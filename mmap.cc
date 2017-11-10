@@ -44,13 +44,21 @@ NAN_METHOD(Map) {
 }
 
 NAN_MODULE_INIT(InitAll) {
-	Set(target, New<String>("PROT_READ").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_READ)));
-	Set(target, New<String>("PROT_WRITE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_WRITE)));
-	Set(target, New<String>("PROT_EXEC").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_EXEC)));
-	Set(target, New<String>("PROT_NONE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_NONE)));
-	Set(target, New<String>("MAP_SHARED").ToLocalChecked(), New<Integer>(static_cast<int8_t>(MAP_SHARED)));
-	Set(target, New<String>("MAP_PRIVATE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(MAP_PRIVATE)));
-	Set(target, New<String>("PAGESIZE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(sysconf(_SC_PAGESIZE))));
+	Set(target, New<String>("PROT_READ").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_READ)));
+	Set(target, New<String>("PROT_WRITE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_WRITE)));
+	Set(target, New<String>("PROT_EXEC").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_EXEC)));
+	Set(target, New<String>("PROT_NONE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_NONE)));
+	Set(target, New<String>("MAP_SHARED").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_SHARED)));
+	Set(target, New<String>("MAP_PRIVATE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_PRIVATE)));
+#ifdef MAP_POPULATE
+	Set(target, New<String>("MAP_POPULATE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_POPULATE)));
+#endif
+	Set(target, New<String>("MAP_ANONYMOUS").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_ANONYMOUS)));
+#ifdef MAP_NONBLOCK
+	Set(target, New<String>("MAP_NONBLOCK").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_NONBLOCK)));
+#endif
+	Set(target, New<String>("MAP_NORESERVE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_NORESERVE)));	
+	Set(target, New<String>("PAGESIZE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(sysconf(_SC_PAGESIZE))));
 	Set(target, New<String>("map").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Map)).ToLocalChecked());
 }
 
