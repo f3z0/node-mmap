@@ -23,11 +23,8 @@ void Unmap(char* data, void* hint) {
 
 //Handle<Value> Map(const v8::FunctionCallbackInfo<v8::Value>& args) {
 NAN_METHOD(Map) {
-	Nan::HandleScope scope;
 	if (info.Length() <= 3) {
-		info.GetReturnValue().Set(Isolate::GetCurrent()->ThrowException(Exception::Error(
-				New<String>("Constructor takes 4 arguments: size, protection, flags, fd and offset.").ToLocalChecked()
-			)));
+		return Nan::ThrowError("function takes 4 arguments: size, protection, flags, fd and offset.");
 	}
 
 	const size_t size = info[0]->ToInteger()->Value();
@@ -36,29 +33,32 @@ NAN_METHOD(Map) {
 	const int fd = info[3]->ToInteger()->Value();
 	const off_t offset = info[4]->ToInteger()->Value();
 
-	printf("size: %d Protection: %d flags: %d fd: %d offset: %d\n", size, protection, flags, fd, offset);
-
-	char* data = (char *) mmap(
-			0, size, protection, flags, fd, offset);
+	char* data = (char *) mmap(0, size, protection, flags, fd, offset);
 
 	if (data == MAP_FAILED) {
-		info.GetReturnValue().Set(Isolate::GetCurrent()->ThrowException(
-				ErrnoException(Isolate::GetCurrent(), errno, "mmap", "")
-			));
-	} else {
-		v8::Local<v8::Object> buffer = Nan::NewBuffer(data, size, Unmap, (void *) size).ToLocalChecked();
-		info.GetReturnValue().Set(buffer);
+		return Nan::ThrowError(Nan::ErrnoException(errno, "mmap"));
 	}
+
+	v8::Local<v8::Object> buffer = Nan::NewBuffer(data, size, Unmap, (void *) size).ToLocalChecked();
+	info.GetReturnValue().Set(buffer);
 }
 
 NAN_MODULE_INIT(InitAll) {
-	Set(target, New<String>("PROT_READ").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_READ)));
-	Set(target, New<String>("PROT_WRITE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_WRITE)));
-	Set(target, New<String>("PROT_EXEC").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_EXEC)));
-	Set(target, New<String>("PROT_NONE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(PROT_NONE)));
-	Set(target, New<String>("MAP_SHARED").ToLocalChecked(), New<Integer>(static_cast<int8_t>(MAP_SHARED)));
-	Set(target, New<String>("MAP_PRIVATE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(MAP_PRIVATE)));
-	Set(target, New<String>("PAGESIZE").ToLocalChecked(), New<Integer>(static_cast<int8_t>(sysconf(_SC_PAGESIZE))));
+	Set(target, New<String>("PROT_READ").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_READ)));
+	Set(target, New<String>("PROT_WRITE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_WRITE)));
+	Set(target, New<String>("PROT_EXEC").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_EXEC)));
+	Set(target, New<String>("PROT_NONE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(PROT_NONE)));
+	Set(target, New<String>("MAP_SHARED").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_SHARED)));
+	Set(target, New<String>("MAP_PRIVATE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_PRIVATE)));
+#ifdef MAP_POPULATE
+	Set(target, New<String>("MAP_POPULATE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_POPULATE)));
+#endif
+	Set(target, New<String>("MAP_ANONYMOUS").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_ANONYMOUS)));
+#ifdef MAP_NONBLOCK
+	Set(target, New<String>("MAP_NONBLOCK").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_NONBLOCK)));
+#endif
+	Set(target, New<String>("MAP_NORESERVE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(MAP_NORESERVE)));	
+	Set(target, New<String>("PAGESIZE").ToLocalChecked(), New<Integer>(static_cast<uint32_t>(sysconf(_SC_PAGESIZE))));
 	Set(target, New<String>("map").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Map)).ToLocalChecked());
 }
 
